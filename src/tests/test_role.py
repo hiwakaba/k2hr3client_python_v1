@@ -481,6 +481,93 @@ class TestK2hr3Role(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myrole.body, None)
 
+    def test_role_deprecated_role_name_arguments(self):
+        """Test deprecated role_name argument generates warning."""
+        myrole = krole.K2hr3Role(self.token)
+        with self.assertWarns(DeprecationWarning):
+            myrole.create(None, self.policies, self.alias, role_name="legacy_role")
+        self.assertEqual(myrole.name, "legacy_role")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.add_member(None, "myhost", True, "1.1.1.1", role_name="legacy_role2")
+        self.assertEqual(myrole.name, "legacy_role2")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.add_members(None, "myhosts", True, "1.1.1.1", role_name="legacy_role3")
+        self.assertEqual(myrole.name, "legacy_role3")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.add_member_with_roletoken(None, "80", "cuk", "extra", "tag",
+                                            "10.0.0.1", "10.0.0.2", role_name="legacy_role4")
+        self.assertEqual(myrole.name, "legacy_role4")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.get(None, True, role_name="legacy_role5")
+        self.assertEqual(myrole.name, "legacy_role5")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.get_token_list(None, True, role_name="legacy_role6")
+        self.assertEqual(myrole.name, "legacy_role6")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.validate_role(None, role_name="legacy_role7")
+        self.assertEqual(myrole.name, "legacy_role7")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.delete(None, role_name="legacy_role8")
+        self.assertEqual(myrole.name, "legacy_role8")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.delete_member(None, "host", "80", "cuk", role_name="legacy_role9")
+        self.assertEqual(myrole.name, "legacy_role9")
+
+        with self.assertWarns(DeprecationWarning):
+            myrole.delete_roletoken(None, "80", "cuk", role_name="legacy_role10")
+        self.assertEqual(myrole.name, "legacy_role10")
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_role_add_member_using_roletoken_post(self, mock_HTTP_REQUEST_METHOD):
+        """Test POST add_member_with_roletoken using role_token."""
+        myrole = krole.K2hr3Role("my_role_token", token_type=krole.K2hr3TokenType.ROLE_TOKEN)
+        myrole.name = self.name
+        myrole.host = self.host
+        myrole.api_id = 5
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.POST(myrole))
+        self.assertEqual(httpreq.url, f"{self.base_url}/v1/role/{self.name}")
+
+    def test_role_no_token_type(self):
+        """Test K2hr3Role with NO_TOKEN type."""
+        myrole = krole.K2hr3Role(None, token_type=krole.K2hr3TokenType.NO_TOKEN)
+        self.assertEqual(myrole.headers, {'Content-Type': 'application/json'})
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_role_add_members_put(self, mock_HTTP_REQUEST_METHOD):
+        """Test PUT add_members."""
+        myrole = krole.K2hr3Role(self.token)
+        myrole.add_members(self.name, "hosts", True, "1.1.1.1")
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.PUT(myrole))
+        self.assertEqual(httpreq.url, f"{self.base_url}/v1/role/{self.name}")
+
+    def test_role_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myrole = krole.K2hr3Role(self.token)
+        myrole.api_id = 999
+        self.assertIsNone(myrole._api_path(krole.K2hr3HTTPMethod.DELETE))
+
+    def test_role_host_properties(self):
+        """Test K2hr3RoleHost constructor and properties."""
+        host = krole.K2hr3RoleHost('host1', '8080', 'cuk1', 'extra1', 'tag1', '1.1.1.1', '2.2.2.2')
+        self.assertEqual(host.host, 'host1')
+        self.assertEqual(host.port, '8080')
+        self.assertEqual(host.cuk, 'cuk1')
+        self.assertEqual(host.extra, 'extra1')
+        self.assertEqual(host.tag, 'tag1')
+        self.assertEqual(host.inboundip, '1.1.1.1')
+        self.assertEqual(host.outboundip, '2.2.2.2')
+
+
 #
 # Local variables:
 # tab-width: 4

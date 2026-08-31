@@ -88,6 +88,26 @@ class TestK2hr3Extdata(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myextdata.body, None)
 
+    def test_extdata_validation_errors(self):
+        """Test invalid types raise K2hr3Exception in K2hr3Extdata."""
+        from k2hr3client.exception import K2hr3Exception
+        with self.assertRaises(K2hr3Exception):
+            kextdata.K2hr3Extdata(123, self.register_path, self.user_agent)  # type: ignore
+        with self.assertRaises(K2hr3Exception):
+            kextdata.K2hr3Extdata(self.extapi_name, 123, self.user_agent)  # type: ignore
+        with self.assertRaises(K2hr3Exception):
+            kextdata.K2hr3Extdata(self.extapi_name, self.register_path, 123)  # type: ignore
+
+        ext = kextdata.K2hr3Extdata(self.extapi_name, self.register_path, self.user_agent)
+        self.assertEqual(ext.user_agent, self.user_agent)
+
+    def test_extdata_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myextdata = kextdata.K2hr3Extdata(self.extapi_name, self.register_path, self.user_agent)
+        myextdata.api_id = 999
+        self.assertIsNone(myextdata._api_path(kextdata.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

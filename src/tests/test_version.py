@@ -100,6 +100,18 @@ class TestK2hr3Version(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myversion.body, None)
 
+    def test_k2hr3version_repr_with_name(self):
+        """Test repr with non-empty name."""
+        myversion = kversion.K2hr3Version("v1")
+        self.assertIn("name='v1'", repr(myversion))
+
+    def test_k2hr3version_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myversion = kversion.K2hr3Version("v1")
+        myversion.api_id = 999
+        self.assertIsNone(myversion._api_path(kversion.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

@@ -87,6 +87,27 @@ class TestK2hr3List(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(mylist.body, None)
 
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_k2hr3list_validate_head(self, mock_HTTP_REQUEST_METHOD):
+        """Test K2hr3List validate via HEAD."""
+        mylist = klist.K2hr3List("token", self.service)
+        mylist.validate()
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.HEAD(mylist))
+        self.assertEqual(httpreq.url, f"{self.base_url}/v1/list/{self.service}")
+
+    def test_k2hr3list_service_validation_error(self):
+        """Test K2hr3List invalid service type raises K2hr3Exception."""
+        from k2hr3client.exception import K2hr3Exception
+        with self.assertRaises(K2hr3Exception):
+            klist.K2hr3List("token", 12345)  # type: ignore
+
+    def test_k2hr3list_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        mylist = klist.K2hr3List("token", self.service)
+        mylist.api_id = 999
+        self.assertIsNone(mylist._api_path(klist.K2hr3HTTPMethod.DELETE))
+
 
 #
 # Local variables:

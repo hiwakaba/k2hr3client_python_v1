@@ -230,6 +230,18 @@ class TestK2hr3Acr(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myacr.body, None)
 
+    def test_acr_service_validation_error(self):
+        """Test invalid service type raises K2hr3Exception."""
+        from k2hr3client.exception import K2hr3Exception
+        with self.assertRaises(K2hr3Exception):
+            kacr.K2hr3Acr("token", 12345)  # type: ignore
+
+    def test_acr_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myacr = kacr.K2hr3Acr("token", self.service)
+        myacr.api_id = 999
+        self.assertIsNone(myacr._api_path(kacr.K2hr3HTTPMethod.DELETE))
+
 
 #
 # Local variables:

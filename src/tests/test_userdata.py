@@ -82,6 +82,19 @@ class TestK2hr3Userdata(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myuserdata.body, None)
 
+    def test_userdata_validation_error(self):
+        """Test invalid userdatapath type raises K2hr3Exception."""
+        from k2hr3client.exception import K2hr3Exception
+        with self.assertRaises(K2hr3Exception):
+            kuserdata.K2hr3Userdata(12345)  # type: ignore
+
+    def test_userdata_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myuserdata = kuserdata.K2hr3Userdata(self.userdatapath)
+        myuserdata.api_id = 999
+        self.assertIsNone(myuserdata._api_path(kuserdata.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

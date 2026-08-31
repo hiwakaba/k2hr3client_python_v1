@@ -319,6 +319,97 @@ class TestK2hr3Resource(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myresource.body, None)
 
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_create_using_post(self, mock_HTTP_REQUEST_METHOD):
+        """Test POST request with r3token."""
+        myresource = kresource.K2hr3Resource("token")
+        myresource.create_conf_resource(
+            name=self.name,
+            data_type="string",
+            resource_data=self.resource_data,
+            keys=self.keys,
+            alias=self.alias)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.POST(myresource))
+        self.assertEqual(httpreq.url, f"{self.base_url}/v1/resource")
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_create_using_post_without_token(self, mock_HTTP_REQUEST_METHOD):
+        """Test POST request without r3token."""
+        myresource = kresource.K2hr3Resource(resource_path=self.resource_path)
+        myresource.create_conf_resource(
+            name=self.name,
+            data_type="string",
+            resource_data=self.resource_data,
+            keys=self.keys,
+            alias=self.alias)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.POST(myresource))
+        self.assertEqual(httpreq.url, f"{self.base_url}/v1/resource/{self.resource_path}")
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_create_using_put_without_token(self, mock_HTTP_REQUEST_METHOD):
+        """Test PUT request without r3token."""
+        myresource = kresource.K2hr3Resource(resource_path=self.resource_path)
+        myresource.create_conf_resource(
+            name=self.name,
+            data_type="string",
+            resource_data=self.resource_data,
+            keys=self.keys,
+            alias=self.alias)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.PUT(myresource))
+        self.assertIn(f"{self.base_url}/v1/resource/{self.resource_path}", httpreq.url)
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_delete_with_scopedtoken(self, mock_HTTP_REQUEST_METHOD):
+        """Test DELETE request with scoped token."""
+        myresource = kresource.K2hr3Resource("token", resource_path=self.resource_path)
+        myresource.delete_with_scopedtoken(data_type="string", keys=self.keys, alias=self.alias)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.DELETE(myresource))
+        self.assertIn(f"{self.base_url}/v1/resource/{self.resource_path}", httpreq.url)
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_delete_with_roletoken(self, mock_HTTP_REQUEST_METHOD):
+        """Test DELETE request with role token."""
+        myresource = kresource.K2hr3Resource("token", resource_path=self.resource_path)
+        myresource.delete_with_roletoken(data_type="string", keys=self.keys)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.DELETE(myresource))
+        self.assertIn(f"{self.base_url}/v1/resource/{self.resource_path}", httpreq.url)
+
+    @patch('k2hr3client.http.K2hr3Http._HTTP_REQUEST_METHOD')
+    def test_resource_delete_with_notoken(self, mock_HTTP_REQUEST_METHOD):
+        """Test DELETE request without token."""
+        myresource = kresource.K2hr3Resource(resource_path=self.resource_path)
+        myresource.delete_with_notoken(
+            port=str(self.port),
+            cuk=self.cuk,
+            role=self.role,
+            data_type="string",
+            keys=self.keys)
+        httpreq = khttp.K2hr3Http(self.base_url)
+        self.assertTrue(httpreq.DELETE(myresource))
+        self.assertIn(f"{self.base_url}/v1/resource/{self.resource_path}", httpreq.url)
+
+    def test_resource_json_dumps_and_properties(self):
+        """Test K2hr3Resource json_dumps deletes None values."""
+        params = {'a': 1, 'b': None, 'c': 'test'}
+        res_json = kresource.K2hr3Resource.json_dumps(params)
+        self.assertEqual(json.loads(res_json), {'a': 1, 'c': 'test'})
+
+        res = kresource.K2hr3Resource("token", roletoken="role_tok", resource_path="path")
+        self.assertEqual(res.roletoken, "role_tok")
+        self.assertEqual(res.resource_path, "path")
+
+    def test_resource_api_path_unsupported_method(self):
+        """Test _api_path returns None for unsupported methods/ids."""
+        myresource = kresource.K2hr3Resource("token")
+        myresource.api_id = 999
+        self.assertIsNone(myresource._api_path(kresource.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

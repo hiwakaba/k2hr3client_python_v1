@@ -245,6 +245,37 @@ class TestK2hr3Policy(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(mypolicy.body, None)
 
+    def test_policy_no_token_init(self):
+        """Test K2hr3Policy without token."""
+        mypolicy = kpolicy.K2hr3Policy(None)
+        self.assertEqual(mypolicy.headers, {'Content-Type': 'application/json'})
+
+    def test_policy_deprecated_policy_name_argument(self):
+        """Test deprecated policy_name argument triggers warning."""
+        mypolicy = kpolicy.K2hr3Policy(self.token)
+        with self.assertWarns(DeprecationWarning):
+            mypolicy.create(None, self.effect, self.action, policy_name="legacy_policy")
+        self.assertEqual(mypolicy.name, "legacy_policy")
+
+        with self.assertWarns(DeprecationWarning):
+            mypolicy.get(None, self.service, policy_name="legacy_policy2")
+        self.assertEqual(mypolicy.name, "legacy_policy2")
+
+        with self.assertWarns(DeprecationWarning):
+            mypolicy.validate(None, "tenant", "resource", "action", policy_name="legacy_policy3")
+        self.assertEqual(mypolicy.name, "legacy_policy3")
+
+        with self.assertWarns(DeprecationWarning):
+            mypolicy.delete(None, policy_name="legacy_policy4")
+        self.assertEqual(mypolicy.name, "legacy_policy4")
+
+    def test_policy_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        mypolicy = kpolicy.K2hr3Policy(self.token)
+        mypolicy.api_id = 999
+        self.assertIsNone(mypolicy._api_path(kpolicy.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

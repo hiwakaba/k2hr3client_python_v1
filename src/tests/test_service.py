@@ -408,6 +408,13 @@ class TestK2hr3Service(unittest.TestCase):
         # 4. assert Request body
         self.assertEqual(myservice.body, None)
 
+    def test_service_api_path_unsupported(self):
+        """Test _api_path returns None on unsupported method."""
+        myservice = kservice.K2hr3Service("token", service_name=self.name)
+        myservice.api_id = 999
+        self.assertIsNone(myservice._api_path(kservice.K2hr3HTTPMethod.DELETE))
+
+
 #
 # Local variables:
 # tab-width: 4

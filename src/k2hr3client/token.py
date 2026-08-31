@@ -187,7 +187,6 @@ from enum import Enum
 import json
 import logging
 from typing import Optional
-import urllib.parse
 import urllib.request
 
 
